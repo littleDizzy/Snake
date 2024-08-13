@@ -1,8 +1,8 @@
 #pragma once
 #include<iostream>
-#include<easyx.h>
+#include<easyx.h>//画图库
 #include<ctime>
-#include<vector>//顺序表 容器  ！此处需要学习！
+#include<vector>//顺序表，此处需要学习！类似py的list
 
 
 
@@ -48,6 +48,7 @@ public:
 	bool collisionWall();//判断碰撞墙,后期考虑改成collision的重载
 	bool collisionSelf();//判断碰撞自己,后期考虑改成collision的重载
 	void increment();//蛇增加一节
+	int getLength();
 
 
 
@@ -56,7 +57,7 @@ public:
 class Food :public Sprite
 {
 public:
-	Food() :Sprite(0, 0,BLUE) 
+	Food() :Sprite(0, 0,YELLOW) 
 	{
 		changeFoodPos();
 	}
@@ -68,7 +69,7 @@ public:
 class Wall :public Sprite
 {
 public:
-	Wall() :Sprite(0, 0, YELLOW) {}
+	Wall() :Sprite(0, 0, LIGHTGRAY) {}
 	//void draw() override;
 	void setWall();//设置墙的大小宽度
 };
@@ -80,12 +81,19 @@ private:
 	Snake snake;
 	Food food;
 	Wall wall;
+	time_t startTime; // 游戏开始时间
 public:
-	GameSence() {};
+	GameSence() 
+	{
+		startTime = time(nullptr);
+	};
 	void run();
-	void onMsg(const ExMessage& msg);//响应消息：鼠标消息，键盘消息
+	void onMsg(const ExMessage& msg);//响应消息：鼠标消息，键盘消息 
 	void snakeEatFood();
 	void snakeStrikeWall();
 	void snakeHeadStrikeBody();
+	void displaySurviveTime();
+	void displayPoints();
+	void showStartScreen();
 };
 

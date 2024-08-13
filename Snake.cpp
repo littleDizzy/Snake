@@ -2,7 +2,7 @@
 /*目前已经实现基本功能，后续需要处理：
 1：增加四周的墙（已解决），撞墙则死(已解决）,更换墙的颜色（已解决）
 2: 头撞身子也死(已解决)
-3：增加积分规则，按照存活时间和长度算积分
+3：增加积分规则，按照存活时间和长度算积分(已解决)
 4：小bug:食物有可能长在墙上(已修复)
 */
 
@@ -200,6 +200,10 @@ void Wall::setWall()
 
 
 }
+int Snake::getLength()
+{
+	return nodes.size();
+}
 
 
 /*GameSence method*/
@@ -233,17 +237,18 @@ void GameSence::onMsg(const ExMessage& msg)
 }
 void GameSence::run()
 {
+
 	//双缓冲绘图
 	BeginBatchDraw(); //双缓冲绘图是一种减少图形闪烁和提高绘制性能的技术。它的基本思想是使用一个或多个内存缓冲
 	cleardevice();
 	wall.setWall();
 	snake.draw();
 	food.draw();
+	displaySurviveTime();
+	displayPoints();
 	EndBatchDraw();//一次性更新到屏幕上
-	//移动蛇就是改变蛇的坐标
+	//移动蛇就是改变蛇的坐标,改变蛇的移动方向，获取键盘按键_getch()
 	snake.bodyMove();
-	//改变蛇的移动方向，获取键盘按键_getch()
-
 	//各种检测
 	snakeEatFood();
 	snakeStrikeWall();
@@ -256,6 +261,7 @@ void GameSence::run()
 	{
 		onMsg(msg);
 	} 
+
 
 }
 void GameSence::snakeEatFood()
@@ -285,6 +291,56 @@ void GameSence::snakeHeadStrikeBody()
 		exit(1);
 	}
 }
+
+void GameSence::displaySurviveTime()
+{
+	time_t currentTime = time(nullptr); // 获取当前时间
+	double elapsed = difftime(currentTime, startTime); // 计算存活时间（秒）
+	// 转换存活时间为字符串
+	TCHAR timeStr[50];
+	swprintf_s(timeStr, _T("你存活了:%.0f 秒"), elapsed); // 使用 _stprintf 将 double 类型转换为字符串
+	// 设置文本颜色
+	settextcolor(WHITE);
+	// 设置文本大小
+	settextstyle(20, 20, L"微软雅黑");
+	// 在屏幕上绘制文本
+	outtextxy(100, 100, timeStr);
+}
+
+void GameSence::displayPoints()
+{
+	//读取当前的蛇的节数，算出积分
+	int length=snake.getLength()-3;
+	// 转换为字符串
+	TCHAR lengthstr[50];
+	swprintf_s(lengthstr, _T("当前得分:%.0d "), length); // 使用 _stprintf 将 double 类型转换为字符串
+	// 设置文本颜色
+	settextcolor(LIGHTMAGENTA);
+	// 设置文本大小
+	settextstyle(20, 20, L"微软雅黑");
+	// 在屏幕上绘制文本
+	outtextxy(200, 200, lengthstr);
+}
+
+void GameSence::showStartScreen() {
+	cleardevice(); // 清空屏幕
+	setfillcolor(LIGHTCYAN);
+	fillrectangle(0, 0, 640, 480); // 填充整个窗口背景
+	settextcolor(BROWN); // 设置文字颜色
+
+	settextstyle(40, 30, L"微软"); // 设置文字样式
+	wchar_t s0[] = L"欢迎使用贪吃蛇定制版";
+	outtextxy(20, 0, s0);
+
+	settextstyle(40, 30, L"微软"); // 设置文字样式
+	TCHAR s1[] = _T("请按回车键开始游戏");
+	outtextxy(20, 50, s1);
+
+	settextstyle(40, 30, L"微软"); // 设置文字样式
+	TCHAR s2[] = _T("按ESC退出游戏");
+	outtextxy(20, 90, s2);
+}
+
 /*Food methods*/
 void Food::draw()
 {
@@ -299,6 +355,23 @@ int main()
 	initgraph(640, 480,EX_SHOWCONSOLE);
 	srand(time(nullptr));//初始化随机数种子
 	GameSence scene;
+	scene.showStartScreen();
+	ExMessage msg1;
+	while (true) {
+		if (peekmessage(&msg1, EX_KEY)) {
+			if (msg1.message == WM_KEYDOWN) {
+				if (msg1.vkcode == VK_RETURN) {
+					// 按下 Enter 键，开始游戏
+					break;
+				}
+				else if (msg1.vkcode == VK_ESCAPE) {
+					// 按下 Esc 键，退出程序
+					std::cout << "你真退啊？.jpg";
+					exit(0);
+				}
+			}
+		}
+	}
 
 	while (1)
 	{
